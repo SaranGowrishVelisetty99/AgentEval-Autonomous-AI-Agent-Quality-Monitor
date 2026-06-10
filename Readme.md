@@ -4,56 +4,114 @@
 
 **Microsoft Agents League Hackathon 2026 — Reasoning Agents Track**
 
-**Foundry IQ · Multi-Step Reasoning · Drift Detection · Automated RCA**
+*Detect AI quality regressions before your users do.*
+
+AgentEval continuously monitors AI agent outputs, evaluates response quality using LLM-as-Judge techniques, detects performance drift, performs automated root cause analysis (RCA), and generates actionable recommendations for remediation.
 
 ---
 
 ## 🚀 Overview
 
-Modern AI agents evolve continuously through prompt updates, model upgrades, retrieval changes, and configuration modifications. While these improvements are intended to enhance performance, even minor changes can silently degrade output quality.
+As AI copilots become embedded across products and enterprise workflows, maintaining response quality becomes increasingly difficult. Prompt updates, model upgrades, retrieval changes, and configuration drift can silently degrade performance without immediate visibility.
 
-Organizations deploying copilots and autonomous agents often lack a standardized mechanism to monitor quality, detect regressions, and identify root causes before end users are impacted.
+AgentEval provides an autonomous monitoring layer that continuously evaluates agent quality, detects degradation patterns, identifies likely causes, and generates recommendations before end users are impacted.
 
-**AgentEval AI** solves this challenge by continuously evaluating AI agent outputs, detecting performance drift, and automatically performing root cause analysis (RCA) to explain quality degradation and recommend corrective actions.
+### Key Benefits
+
+* 📊 Continuous AI quality monitoring
+* 🔍 Automated drift detection
+* 🧠 LLM-powered root cause analysis
+* 🚨 Proactive alerting
+* 📝 Auto-generated post-mortems
+* ☁️ Microsoft Foundry IQ integration
 
 ---
 
 ## 🎯 Problem Statement
 
-Microsoft Copilot experiences are now embedded across products, platforms, and enterprise workflows.
+Organizations deploying AI copilots face several challenges:
 
-As AI systems evolve:
+* No standardized AI quality monitoring framework
+* Silent quality degradation after prompt or model updates
+* Lack of visibility into hallucination trends
+* Difficulty identifying root causes of regressions
+* Manual and time-consuming incident investigations
 
-* Prompt modifications may reduce answer quality.
-* Model upgrades can introduce unexpected behaviors.
-* Configuration changes can impact reasoning consistency.
-* Retrieval pipelines may drift from expected performance.
-* Quality degradation often remains unnoticed until users report issues.
-
-AgentEval provides continuous quality monitoring and automated diagnostics for AI agents, enabling proactive detection and remediation.
+AgentEval solves these challenges through an autonomous evaluation and reasoning pipeline.
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ Architecture
 
-![AgentEval Architecture](assets/agenteval-architecture.png)
+```mermaid
+flowchart TB
 
-### End-to-End Evaluation Pipeline
+subgraph DS["Data Sources"]
+    A["Azure Monitor"]
+    B["Cosmos DB"]
+    C["File/API Export"]
+    D["Custom Sources"]
+end
 
-AgentEval continuously monitors AI agent quality through a multi-stage reasoning workflow orchestrated by Microsoft Foundry IQ.
+subgraph ING["Ingestion"]
+    E["Log Ingestion + Normalization"]
+end
 
-#### Data Sources
+subgraph SCORE["Foundry IQ Reasoning Pipeline"]
+    F["Step 1: Static Scanner"]
+    G["Step 2: LLM-as-Judge"]
+    H["Quality Report"]
+end
 
-AgentEval can ingest logs and conversations from:
+subgraph DET["Detection"]
+    I["Step 3: Drift Detection"]
+end
+
+subgraph RCA["Root Cause Analysis"]
+    J["Step 4: RCA"]
+    K["Step 5: Evidence Correlation"]
+end
+
+subgraph OUT["Outputs"]
+    L["Live Dashboard"]
+    M["Drift Alert"]
+    N["RCA Report"]
+    O["Post-Mortem"]
+end
+
+A --> E
+B --> E
+C --> E
+D --> E
+
+E --> F
+F --> G
+G --> H
+H --> I
+I --> J
+J --> K
+
+K --> L
+K --> M
+K --> N
+K --> O
+```
+
+---
+
+## ⚙️ How It Works
+
+### Step 1 — Log Collection & Normalization
+
+AgentEval ingests AI interactions from:
 
 * Azure Monitor
 * Azure Cosmos DB
-* File/API exports
-* Custom enterprise data sources
+* File exports
+* REST APIs
+* Custom data sources
 
-#### Log Ingestion & Normalization
-
-Incoming agent interactions are normalized into a common schema:
+All logs are normalized into a standard schema:
 
 ```json
 {
@@ -64,23 +122,25 @@ Incoming agent interactions are normalized into a common schema:
 }
 ```
 
-Validation, deduplication, and schema enforcement occur before evaluation.
+---
 
-#### Foundry IQ Orchestrated Pipeline
+### Step 2 — Static Pre-Flight Scanner
 
-##### Step 1 — Static Pre-Flight Scanner
+Before invoking an LLM evaluator, AgentEval performs deterministic validation checks:
 
-A deterministic rule engine scans responses for:
-
-* Fake URLs
-* Phone numbers
+* Fake URL detection
+* Sensitive information detection
 * Impossible SLA claims
-* Dangerous advice patterns
+* Unsafe recommendations
 * Policy violations
 
-##### Step 2 — LLM-as-Judge Evaluation
+This provides low-cost, high-speed screening.
 
-Claude evaluates outputs across five quality dimensions:
+---
+
+### Step 3 — LLM-as-Judge Evaluation
+
+AgentEval uses Claude as an evaluation model to score outputs across five dimensions:
 
 | Dimension           | Weight |
 | ------------------- | ------ |
@@ -90,117 +150,129 @@ Claude evaluates outputs across five quality dimensions:
 | Reasoning Coherence | 15%    |
 | Safety              | 15%    |
 
-Produces structured JSON quality reports and risk assessments.
+Each response receives:
 
-##### Step 3 — Drift Detection
-
-Compares historical baseline quality against current production performance.
-
-Severity levels:
-
-* Minor
-* Moderate
-* Severe
-* Critical
-
-Automatically triggers Root Cause Analysis when quality drops exceed predefined thresholds.
-
-##### Step 4 — Root Cause Analysis (RCA)
-
-Identifies degradation patterns through:
-
-* Baseline comparison
-* Pattern extraction
-* Hypothesis generation
-
-##### Step 5 — Evidence Correlation & Remediation
-
-Ranks likely causes by:
-
-* Confidence
-* Impact
-* Effort required
-
-Generates:
-
-* Recommended fixes
-* RCA reports
-* Post-mortem drafts
+* Overall quality score
+* Risk classification
+* Dimension-level breakdown
+* Evaluation rationale
 
 ---
 
-## ✨ Key Features
+### Step 4 — Drift Detection
 
-### 📊 Multi-Dimensional Quality Evaluation
+Quality metrics are continuously compared against historical baselines.
 
-Evaluates AI responses across five critical dimensions:
+Drift severity levels:
+
+| Severity | Description               |
+| -------- | ------------------------- |
+| Minor    | Small deviation           |
+| Moderate | Noticeable degradation    |
+| Severe   | Significant quality loss  |
+| Critical | Immediate action required |
+
+When degradation exceeds configured thresholds, AgentEval automatically triggers Root Cause Analysis.
+
+---
+
+### Step 5 — Root Cause Analysis (RCA)
+
+The RCA engine investigates quality degradation through:
+
+* Pattern extraction
+* Historical comparison
+* Failure clustering
+* Hypothesis generation
+* Evidence correlation
+
+Outputs include ranked root-cause candidates and remediation recommendations.
+
+---
+
+### Step 6 — Automated Reporting
+
+AgentEval generates:
+
+* RCA reports
+* Incident summaries
+* Post-mortem drafts
+* Engineering recommendations
+
+---
+
+## ✨ Features
+
+### 📊 Multi-Dimensional Quality Scoring
+
+Evaluate agent outputs across:
 
 * Accuracy
 * Relevance
 * Hallucination Risk
-* Reasoning Coherence
+* Reasoning Quality
 * Safety
 
-### 📈 Automated Drift Detection
+### 📈 Drift Detection
 
-Detects quality degradation through baseline versus current performance comparisons.
+Identify quality regressions automatically before users report issues.
 
 ### 🔍 Root Cause Analysis
 
-Uses multi-step reasoning to identify probable causes of performance regressions.
+Understand why quality changed instead of only knowing that it changed.
 
-### 💡 Actionable Recommendations
+### 🚨 Alerting
 
-Generates ranked remediation suggestions based on impact and implementation effort.
+Notify engineering teams through:
+
+* Microsoft Teams
+* Slack
+* Email
 
 ### 📝 Automated Post-Mortems
 
-Creates incident summaries and investigation reports for engineering teams.
+Generate structured incident reports for rapid response.
 
 ### 📡 Real-Time Monitoring
 
-Provides continuous observability into AI agent quality metrics.
+Track quality trends and risk levels through a live dashboard.
 
 ---
 
 ## ☁️ Microsoft Foundry IQ Integration
 
-AgentEval leverages **Microsoft Foundry IQ** as its orchestration and observability layer.
+AgentEval is designed around Microsoft Foundry IQ.
 
-### Pipeline Stages
+Foundry IQ orchestrates:
 
-#### Step 1: Output Sampling
+1. Data ingestion
+2. Evaluation workflow
+3. Drift analysis
+4. RCA execution
+5. Reporting pipeline
 
-Collect AI agent responses from production logs.
+Benefits include:
 
-#### Step 2: Quality Scoring
-
-Use an LLM-as-Judge framework to evaluate outputs across five quality dimensions.
-
-#### Step 3: Drift Detection
-
-Perform statistical comparisons across time windows to identify degradation trends.
-
-#### Step 4: Root Cause Analysis
-
-Apply multi-step reasoning to determine likely causes of quality regressions.
-
-#### Step 5: Remediation & Reporting
-
-Generate fix recommendations, RCA reports, and post-mortem drafts.
+* Traceability
+* Observability
+* Managed deployment
+* Multi-step reasoning workflows
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer           | Technology              | Purpose                       |
-| --------------- | ----------------------- | ----------------------------- |
-| Orchestration   | Microsoft Foundry IQ    | Multi-step reasoning workflow |
-| Backend         | FastAPI + Python        | REST API services             |
-| Quality Scoring | Claude API              | LLM-as-Judge evaluation       |
-| Drift Detection | Python Statistics       | Trend and regression analysis |
-| RCA Engine      | Claude API + Foundry IQ | Root cause reasoning          |
-| Frontend        | React                   | Live monitoring dashboard     |
+| Layer              | Technology                  |
+| ------------------ | --------------------------- |
+| Orchestration      | Microsoft Foundry IQ        |
+| Backend API        | FastAPI                     |
+| Language           | Python                      |
+| Quality Evaluation | Claude API                  |
+| Drift Detection    | Python Statistical Analysis |
+| RCA Engine         | Claude + Foundry IQ         |
+| Frontend           | React                       |
+| Monitoring         | Azure Monitor               |
+| Storage            | Cosmos DB                   |
 
 ---
 
@@ -209,74 +281,99 @@ Generate fix recommendations, RCA reports, and post-mortem drafts.
 ```text
 AgentEval/
 │
-├── assets/
-│   └── agenteval-architecture.png
-│
 ├── agenteval_main.py
 ├── agenteval_routes.py
 ├── quality_scorer.py
 ├── drift_detector.py
 ├── rca_engine.py
+│
 ├── AgentEval.jsx
 │
-├── AgentEval_README.md
 ├── AgentEval_ARCHITECTURE.docx
-└── AgentEval_SUBMISSION.docx
+├── AgentEval_README.docx
+├── AgentEval_SUBMISSION.docx
+│
+├── agenteval_requirements.txt
+└── README.md
 ```
 
 ---
 
 ## ⚡ Quick Start
 
-### Backend Setup
+### Clone Repository
+
+```bash
+git clone https://github.com/kaushal-shivaprakashan/AgentEval-Autonomous-AI-Agent-Quality-Monitor.git
+
+cd AgentEval-Autonomous-AI-Agent-Quality-Monitor
+```
+
+### Create Virtual Environment
 
 ```bash
 python -m venv venv
+
 source venv/bin/activate
+```
 
+### Install Dependencies
+
+```bash
 pip install -r agenteval_requirements.txt
+```
 
-echo "ANTHROPIC_API_KEY=your_key" > .env
+### Configure Environment
 
+```bash
+echo "ANTHROPIC_API_KEY=YOUR_API_KEY" > .env
+```
+
+### Run Backend
+
+```bash
 uvicorn agenteval_main:app --reload --port 8000
 ```
 
-### Frontend Setup
+### Run Frontend
 
 ```bash
 npm install
+
 npm run dev
 ```
 
 ---
 
-## 🧪 API Example
+## 🧪 Sample API Request
 
-### Evaluate a Single Agent Response
+### Evaluate Agent Output
+
+**Endpoint**
 
 ```http
 POST /api/v1/eval/single
 ```
 
-Example Request:
+**Request**
 
 ```json
 {
-  "response": "Sample AI agent output"
+  "response": "The customer's issue has been resolved."
 }
 ```
 
-Example Response:
+**Response**
 
 ```json
 {
-  "overall_score": 86,
+  "overall_score": 88,
   "risk_level": "LOW",
-  "accuracy": 90,
-  "relevance": 85,
-  "hallucination_risk": 92,
-  "reasoning": 80,
-  "safety": 88
+  "accuracy": 92,
+  "relevance": 86,
+  "hallucination_risk": 90,
+  "reasoning": 84,
+  "safety": 89
 }
 ```
 
@@ -284,45 +381,50 @@ Example Response:
 
 ## 📊 Outputs
 
-AgentEval generates four operational outputs:
-
 ### Live Dashboard
 
-* Quality scores
-* Drift charts
-* Historical trends
+Displays:
+
+* Quality trends
+* Drift history
+* Evaluation metrics
+* Risk indicators
 
 ### Drift Alerts
 
-Notifications through:
+Automatic notifications via:
 
-* Microsoft Teams
 * Slack
+* Microsoft Teams
 * Email
 
 ### RCA Reports
 
-Detailed analysis of:
+Generated root cause investigations with ranked evidence.
 
-* Root causes
-* Confidence scores
-* Recommended fixes
+### Post-Mortem Reports
 
-### Post-Mortem Drafts
-
-Auto-generated incident summaries for engineering and leadership review.
+Draft incident reports for engineering review.
 
 ---
 
-## 📈 Future Enhancements
+## 🔮 Future Enhancements
 
 * Azure OpenAI integration
-* Azure AI Foundry deployment templates
-* Real-time streaming evaluations
-* Historical trend visualizations
+* Real-time streaming evaluation
 * Multi-agent benchmarking
-* CI/CD quality gates for AI deployments
+* CI/CD quality gates
+* Azure AI Foundry deployment templates
 * Enterprise observability integrations
+* Advanced trend forecasting
+
+---
+
+## 🏆 Hackathon Submission
+
+Built for the **Microsoft Agents League Hackathon 2026** under the **Reasoning Agents Track**.
+
+AgentEval demonstrates how AI systems can autonomously monitor, evaluate, diagnose, and improve the quality of other AI systems.
 
 ---
 
@@ -333,15 +435,9 @@ Auto-generated incident summaries for engineering and leadership review.
 
 Seattle, Washington, USA
 
-GitHub: https://github.com/kaushalshivaprakashan
+GitHub: https://github.com/kaushal-shivaprakashan
 
 LinkedIn: https://linkedin.com/in/kaushalshivaprakash
-
----
-
-## 🏆 Hackathon Submission
-
-Built for the **Microsoft Agents League Hackathon 2026** under the **Reasoning Agents Track**, demonstrating how AI systems can autonomously monitor, evaluate, diagnose, and improve the quality of other AI agents.
 
 ---
 
