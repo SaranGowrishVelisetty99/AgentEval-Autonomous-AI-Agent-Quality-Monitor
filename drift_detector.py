@@ -1,7 +1,7 @@
 import statistics
 from dataclasses import dataclass, field
 from typing import List, Optional
-from app.services.quality_scorer import QualityReport
+from quality_scorer import QualityReport
 
 
 @dataclass

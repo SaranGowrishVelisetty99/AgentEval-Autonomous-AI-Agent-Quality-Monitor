@@ -3,9 +3,9 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 
-from app.services.quality_scorer import score_log_entry
-from app.services.drift_detector import detect_drift
-from app.services.rca_engine import run_rca
+from quality_scorer import score_log_entry
+from drift_detector import detect_drift
+from rca_engine import run_rca
 
 router = APIRouter()
 
@@ -153,8 +153,15 @@ async def compare_agents(req: CompareRequest):
     # Step 4: RCA (if triggered)
     rca = None
     if req.run_rca and (drift.should_trigger_rca or drift.drift_detected):
-        baseline_logs_raw = [{"input": l.input, "output": l.output} for l in req.baseline.logs]
-        current_logs_raw  = [{"input": l.input, "output": l.output} for l in req.current.logs]
+        # Enrich raw logs with flags detected during scoring for RCA context
+        baseline_logs_raw = [
+            {"input": l.input, "output": l.output, "red_flags": r.red_flags} 
+            for l, r in zip(req.baseline.logs, baseline_reports)
+        ]
+        current_logs_raw  = [
+            {"input": l.input, "output": l.output, "red_flags": r.red_flags} 
+            for l, r in zip(req.current.logs, current_reports)
+        ]
         rca_report = await run_rca(
             baseline_logs_raw, current_logs_raw, drift,
             agent_name=req.current.agent_name,

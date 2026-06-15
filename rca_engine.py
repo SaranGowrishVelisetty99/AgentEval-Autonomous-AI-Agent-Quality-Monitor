@@ -3,10 +3,10 @@ import json
 import httpx
 from dataclasses import dataclass, field
 from typing import List, Optional
-from app.services.drift_detector import DriftReport
+from drift_detector import DriftReport
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-3-5-sonnet-20241022"
 
 
 @dataclass
@@ -68,8 +68,7 @@ async def run_rca(
     # Build evidence from red flags and drift events
     static_evidence = []
     for log in degraded_logs:
-        if hasattr(log, "red_flags"):
-            static_evidence.extend(log.red_flags)
+        static_evidence.extend(log.get("red_flags", []))
 
     drift_evidence = [
         f"{ev.dimension}: {ev.severity} drift ({round(ev.drop, 1)} point drop)"

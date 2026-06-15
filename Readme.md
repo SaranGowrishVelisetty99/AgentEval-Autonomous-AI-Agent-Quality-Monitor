@@ -284,20 +284,16 @@ AgentEval/
 │   ├── src/
 │   │   ├── AgentEval.jsx    # Main Logic & UI
 │   │   └── main.jsx         # Entry Point
-│   ├── package.json         # Vite 6 Config
-│   └── ...
-|                    # Backend Logic
+│   └── package.json         # Vite 6 Config
 │
-├── quality_scorer.py
-├── drift_detector.py
-├── rca_engine.py
+├── quality_scorer.py        # Static + LLM Scoring
+├── drift_detector.py        # Drift analysis logic
+├── rca_engine.py            # Claude-powered RCA
 │
-├── agenteval_main.py        # FastAPI Entry
-├── agenteval_routes.py      # API Endpoints
-├── .gitignore               # Root ignore rules
-│
-├── agenteval_requirements.txt
-└── README.md
+├── agenteval_main.py        # FastAPI Entry (Uvicorn)
+├── agenteval_routes.py      # REST Endpoints (/api/v1)
+├── agenteval_requirements.txt # Python dependencies
+└── .env                     # API Keys (Anthropic)
 ```
 
 ---
@@ -442,6 +438,13 @@ Seattle, Washington, USA
 GitHub: https://github.com/kaushal-shivaprakashan
 
 LinkedIn: https://linkedin.com/in/kaushalshivaprakash
+
+## 👨‍💻 Contributor
+
+**Saran Gowrish Velisetty**
+
+GitHub: https://github.com/SaranGowrishVelisetty99
+LinkedIn: https://www.linkedin.com/in/saran-gowrish-velisetty-382585238/
 
 ---
 

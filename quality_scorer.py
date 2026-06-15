@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-MODEL = "claude-sonnet-4-20250514"
+MODEL = "claude-3-5-sonnet-20241022"
 
 # ── Red flag patterns for static pre-scoring ─────────────────────────────────
 RED_FLAGS = [

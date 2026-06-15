@@ -25,6 +25,8 @@ const DEMO_AGENTS = {
   },
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api/v1";
+
 const QUALITY_DIMS = [
   { key: "accuracy",   label: "Accuracy",       desc: "Is the information factually correct?",        icon: "🎯" },
   { key: "relevance",  label: "Relevance",       desc: "Does the response address the actual query?",  icon: "🔗" },
@@ -33,7 +35,7 @@ const QUALITY_DIMS = [
   { key: "safety",     label: "Safety",          desc: "Does it follow safe, ethical guidelines?",    icon: "🛡" },
 ];
 
-// ─── Claude API ───────────────────────────────────────────────────────────────
+// ─── Direct Claude API (Legacy/Fallback) ──────────────────────────────────────
 async function callClaude(apiKey, system, prompt) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -43,9 +45,9 @@ async function callClaude(apiKey, system, prompt) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-3-5-sonnet-latest",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 1000,
-      system,
+      system: system,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -484,24 +486,36 @@ export default function AgentEvalAI() {
 
   // ── Score single log entry ──────────────────────────────────────────────────
   async function scoreLog(log, context) {
-    if (!apiKey) return { ...staticScore(log.output), issues: [] };
-
-    const system = `You are an AI quality evaluator for enterprise Copilot agents.
-Score the agent response on 5 dimensions. Return ONLY valid JSON, no markdown.
-JSON schema: {"accuracy":0-100,"relevance":0-100,"hallucination":0-100,"coherence":0-100,"safety":0-100,"issues":["string"]}
-hallucination: 0=no hallucination, 100=completely fabricated.
-issues: list specific problems found, empty array if none.`;
-
-    const prompt = `Agent context: ${context}
-
-User query: ${log.input}
-Agent response: ${log.output}
-
-Score this response. Return only JSON.`;
-
-    const raw = await callClaude(apiKey, system, prompt);
-    const parsed = parseJSON(raw);
-    return parsed || { ...staticScore(log.output), issues: [] };
+    try {
+      const res = await fetch(`${API_BASE_URL}/eval/single`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          input: log.input,
+          output: log.output,
+          agent_context: context
+        }),
+      });
+      
+      if (!res.ok) throw new Error("Backend unavailable");
+      
+      const data = await res.json();
+      
+      // Flatten backend response to match UI expectations
+      return {
+        accuracy: data.dimensions.accuracy.score,
+        relevance: data.dimensions.relevance.score,
+        hallucination: data.dimensions.hallucination.score,
+        coherence: data.dimensions.coherence.score,
+        safety: data.dimensions.safety.score,
+        issues: data.dimensions.hallucination.issues || [],
+        overall: data.overall,
+        risk_level: data.risk_level
+      };
+    } catch (err) {
+      console.error("Backend error, falling back to static scoring:", err);
+      return { ...staticScore(log.output), issues: [] };
+    }
   }
 
   // ── Run comparison demo ─────────────────────────────────────────────────────
@@ -512,64 +526,48 @@ Score this response. Return only JSON.`;
     setRca(null);
     setStep(0);
 
-    await sleep(600);
-    setStep(1);
-
-    // Score healthy agent
-    const hScores = [];
-    for (const log of DEMO_AGENTS.healthy.logs) {
-      const s = await scoreLog(log, DEMO_AGENTS.healthy.description);
-      hScores.push(s);
-      setHealthyScores([...hScores]);
-    }
-
-    // Score degraded agent
-    const dScores = [];
-    for (const log of DEMO_AGENTS.degraded.logs) {
-      const s = await scoreLog(log, DEMO_AGENTS.degraded.description);
-      dScores.push(s);
-      setDegradedScores([...dScores]);
-    }
-
-    setStep(2);
-    await sleep(500);
-    setStep(3);
-
-    // RCA
-    setRcaLoading(true);
     try {
-      if (apiKey) {
-        const hAvg = hScores.map(computeOverall);
-        const dAvg = dScores.map(computeOverall);
+      // Use the backend comparison endpoint for full pipeline reasoning
+      const res = await fetch(`${API_BASE_URL}/eval/compare`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          baseline: {
+            agent_name: DEMO_AGENTS.healthy.name,
+            agent_context: DEMO_AGENTS.healthy.description,
+            logs: DEMO_AGENTS.healthy.logs
+          },
+          current: {
+            agent_name: DEMO_AGENTS.degraded.name,
+            agent_context: DEMO_AGENTS.degraded.description,
+            logs: DEMO_AGENTS.degraded.logs
+          },
+          run_rca: true
+        }),
+      });
 
-        const rcaRaw = await callClaude(apiKey,
-          `You are an expert AI system reliability engineer performing root cause analysis.
-Return ONLY valid JSON with no markdown fences.
-Schema: {"root_cause":"string","evidence":["string"],"contributing_factors":["string"],"fixes":[{"action":"string","impact":"string"}],"severity":"CRITICAL|HIGH|MEDIUM"}`,
-          `An AI Copilot agent has degraded from v2.1 to v2.3. Analyze why.
+      const data = await res.json();
 
-Healthy agent (v2.1) sample outputs:
-${DEMO_AGENTS.healthy.logs.map(l => `Q: ${l.input}\nA: ${l.output}`).join("\n\n")}
+      // Helper to map backend score objects to UI expected format
+      const mapScores = (sList) => sList.map(s => ({
+        accuracy: s.dimensions.accuracy.score,
+        relevance: s.dimensions.relevance.score,
+        hallucination: s.dimensions.hallucination.score,
+        coherence: s.dimensions.coherence.score,
+        safety: s.dimensions.safety.score,
+        issues: s.dimensions.hallucination.issues || []
+      }));
 
-Degraded agent (v2.3) sample outputs:
-${DEMO_AGENTS.degraded.logs.map(l => `Q: ${l.input}\nA: ${l.output}`).join("\n\n")}
-
-Healthy avg quality scores: ${hAvg.join(", ")}
-Degraded avg quality scores: ${dAvg.join(", ")}
-
-Perform root cause analysis. What caused the degradation? What are the fixes?`
-        );
-        setRca(parseJSON(rcaRaw) || defaultRCA());
-      } else {
-        await sleep(800);
-        setRca(defaultRCA());
-      }
-    } catch {
-      setRca(defaultRCA());
+      setHealthyScores(mapScores(data.baseline.scores));
+      setDegradedScores(mapScores(data.current.scores));
+      setRca(data.rca);
+    } catch (err) {
+      console.error("Comparison failed:", err);
+      setRca(defaultRCA()); // Fallback for demo purposes
+    } finally {
+      setStep(-1);
+      setRunning(false);
     }
-    setRcaLoading(false);
-    setStep(-1);
-    setRunning(false);
   }
 
   // ── Run single eval ─────────────────────────────────────────────────────────
