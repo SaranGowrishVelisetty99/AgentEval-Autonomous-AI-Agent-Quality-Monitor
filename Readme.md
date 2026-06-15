@@ -4,7 +4,7 @@
 
 **Microsoft Agents League Hackathon 2026 — Reasoning Agents Track**
 
-*Detect AI quality regressions before your users do.*
+_Detect AI quality regressions before your users do._
 
 AgentEval continuously monitors AI agent outputs, evaluates response quality using LLM-as-Judge techniques, detects performance drift, performs automated root cause analysis (RCA), and generates actionable recommendations for remediation.
 
@@ -18,12 +18,12 @@ AgentEval provides an autonomous monitoring layer that continuously evaluates ag
 
 ### Key Benefits
 
-* 📊 Continuous AI quality monitoring
-* 🔍 Automated drift detection
-* 🧠 LLM-powered root cause analysis
-* 🚨 Proactive alerting
-* 📝 Auto-generated post-mortems
-* ☁️ Microsoft Foundry IQ integration
+- 📊 Continuous AI quality monitoring
+- 🔍 Automated drift detection
+- 🧠 LLM-powered root cause analysis
+- 🚨 Proactive alerting
+- 📝 Auto-generated post-mortems
+- ☁️ Microsoft Foundry IQ integration
 
 ---
 
@@ -31,11 +31,11 @@ AgentEval provides an autonomous monitoring layer that continuously evaluates ag
 
 Organizations deploying AI copilots face several challenges:
 
-* No standardized AI quality monitoring framework
-* Silent quality degradation after prompt or model updates
-* Lack of visibility into hallucination trends
-* Difficulty identifying root causes of regressions
-* Manual and time-consuming incident investigations
+- No standardized AI quality monitoring framework
+- Silent quality degradation after prompt or model updates
+- Lack of visibility into hallucination trends
+- Difficulty identifying root causes of regressions
+- Manual and time-consuming incident investigations
 
 AgentEval solves these challenges through an autonomous evaluation and reasoning pipeline.
 
@@ -105,11 +105,11 @@ K --> O
 
 AgentEval ingests AI interactions from:
 
-* Azure Monitor
-* Azure Cosmos DB
-* File exports
-* REST APIs
-* Custom data sources
+- Azure Monitor
+- Azure Cosmos DB
+- File exports
+- REST APIs
+- Custom data sources
 
 All logs are normalized into a standard schema:
 
@@ -128,11 +128,11 @@ All logs are normalized into a standard schema:
 
 Before invoking an LLM evaluator, AgentEval performs deterministic validation checks:
 
-* Fake URL detection
-* Sensitive information detection
-* Impossible SLA claims
-* Unsafe recommendations
-* Policy violations
+- Fake URL detection
+- Sensitive information detection
+- Impossible SLA claims
+- Unsafe recommendations
+- Policy violations
 
 This provides low-cost, high-speed screening.
 
@@ -142,8 +142,8 @@ This provides low-cost, high-speed screening.
 
 AgentEval uses Claude as an evaluation model to score outputs across five dimensions:
 
-| Dimension           | Weight |
-| ------------------- | ------ |
+| Dimension           | Weight | Icon |
+| ------------------- | ------ | ---- |
 | Accuracy            | 25%    |
 | Relevance           | 20%    |
 | Hallucination Risk  | 25%    |
@@ -152,10 +152,10 @@ AgentEval uses Claude as an evaluation model to score outputs across five dimens
 
 Each response receives:
 
-* Overall quality score
-* Risk classification
-* Dimension-level breakdown
-* Evaluation rationale
+- Overall quality score
+- Risk classification
+- Dimension-level breakdown
+- Evaluation rationale
 
 ---
 
@@ -180,11 +180,11 @@ When degradation exceeds configured thresholds, AgentEval automatically triggers
 
 The RCA engine investigates quality degradation through:
 
-* Pattern extraction
-* Historical comparison
-* Failure clustering
-* Hypothesis generation
-* Evidence correlation
+- Pattern extraction
+- Historical comparison
+- Failure clustering
+- Hypothesis generation
+- Evidence correlation
 
 Outputs include ranked root-cause candidates and remediation recommendations.
 
@@ -194,10 +194,10 @@ Outputs include ranked root-cause candidates and remediation recommendations.
 
 AgentEval generates:
 
-* RCA reports
-* Incident summaries
-* Post-mortem drafts
-* Engineering recommendations
+- RCA reports
+- Incident summaries
+- Post-mortem drafts
+- Engineering recommendations
 
 ---
 
@@ -207,11 +207,11 @@ AgentEval generates:
 
 Evaluate agent outputs across:
 
-* Accuracy
-* Relevance
-* Hallucination Risk
-* Reasoning Quality
-* Safety
+- Accuracy
+- Relevance
+- Hallucination Risk
+- Reasoning Quality
+- Safety
 
 ### 📈 Drift Detection
 
@@ -225,9 +225,9 @@ Understand why quality changed instead of only knowing that it changed.
 
 Notify engineering teams through:
 
-* Microsoft Teams
-* Slack
-* Email
+- Microsoft Teams
+- Slack
+- Email
 
 ### 📝 Automated Post-Mortems
 
@@ -253,26 +253,26 @@ Foundry IQ orchestrates:
 
 Benefits include:
 
-* Traceability
-* Observability
-* Managed deployment
-* Multi-step reasoning workflows
+- Traceability
+- Observability
+- Managed deployment
+- Multi-step reasoning workflows
 
 ---
 
 ## 🛠️ Technology Stack
 
-| Layer              | Technology                  |
-| ------------------ | --------------------------- |
-| Orchestration      | Microsoft Foundry IQ        |
-| Backend API        | FastAPI                     |
-| Language           | Python                      |
-| Quality Evaluation | Claude API                  |
-| Drift Detection    | Python Statistical Analysis |
-| RCA Engine         | Claude + Foundry IQ         |
-| Frontend           | React                       |
-| Monitoring         | Azure Monitor               |
-| Storage            | Cosmos DB                   |
+| Layer             | Technology                  |
+| ----------------- | --------------------------- |
+| **Orchestration** | Microsoft Foundry IQ        |
+| **Backend API**   | FastAPI                     |
+| **Quality Eval**  | Claude 3.5 Sonnet           |
+| **Frontend**      | React 19 + Vite 6           |
+| Drift Detection   | Python Statistical Analysis |
+| **RCA Engine**    | Claude + Foundry IQ         |
+| **Styling**       | Modern CSS (Flex/Grid)      |
+| **Monitoring**    | Azure Monitor               |
+| Storage           | Cosmos DB                   |
 
 ---
 
@@ -280,18 +280,21 @@ Benefits include:
 
 ```text
 AgentEval/
+├── frontend/                # React 19 SPA
+│   ├── src/
+│   │   ├── AgentEval.jsx    # Main Logic & UI
+│   │   └── main.jsx         # Entry Point
+│   ├── package.json         # Vite 6 Config
+│   └── ...
+|                    # Backend Logic
 │
-├── agenteval_main.py
-├── agenteval_routes.py
 ├── quality_scorer.py
 ├── drift_detector.py
 ├── rca_engine.py
 │
-├── AgentEval.jsx
-│
-├── AgentEval_ARCHITECTURE.docx
-├── AgentEval_README.docx
-├── AgentEval_SUBMISSION.docx
+├── agenteval_main.py        # FastAPI Entry
+├── agenteval_routes.py      # API Endpoints
+├── .gitignore               # Root ignore rules
 │
 ├── agenteval_requirements.txt
 └── README.md
@@ -338,6 +341,8 @@ uvicorn agenteval_main:app --reload --port 8000
 ### Run Frontend
 
 ```bash
+cd frontend
+
 npm install
 
 npm run dev
@@ -385,18 +390,18 @@ POST /api/v1/eval/single
 
 Displays:
 
-* Quality trends
-* Drift history
-* Evaluation metrics
-* Risk indicators
+- Quality trends
+- Drift history
+- Evaluation metrics
+- Risk indicators
 
 ### Drift Alerts
 
 Automatic notifications via:
 
-* Slack
-* Microsoft Teams
-* Email
+- Slack
+- Microsoft Teams
+- Email
 
 ### RCA Reports
 
@@ -410,13 +415,13 @@ Draft incident reports for engineering review.
 
 ## 🔮 Future Enhancements
 
-* Azure OpenAI integration
-* Real-time streaming evaluation
-* Multi-agent benchmarking
-* CI/CD quality gates
-* Azure AI Foundry deployment templates
-* Enterprise observability integrations
-* Advanced trend forecasting
+- Azure OpenAI integration
+- Real-time streaming evaluation
+- Multi-agent benchmarking
+- CI/CD quality gates
+- Azure AI Foundry deployment templates
+- Enterprise observability integrations
+- Advanced trend forecasting
 
 ---
 
@@ -431,7 +436,6 @@ AgentEval demonstrates how AI systems can autonomously monitor, evaluate, diagno
 ## 👨‍💻 Author
 
 **Kaushal Shivaprakashan**
-
 
 Seattle, Washington, USA
 

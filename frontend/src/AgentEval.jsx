@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useCallback, useEffect, useRef } from "react";
 
 // ─── Demo data ────────────────────────────────────────────────────────────────
@@ -42,7 +43,7 @@ async function callClaude(apiKey, system, prompt) {
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-3-5-sonnet-latest",
       max_tokens: 1000,
       system,
       messages: [{ role: "user", content: prompt }],
